@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 from std_msgs.msg import String
 
@@ -10,7 +10,6 @@ import numpy as np
 
 """Returns numpy array of image data."""
 def capture_frame(cam, img):
-    cam.start_acquisition()
     cam.get_image(img)
     return img.get_image_data_numpy()
 
@@ -20,12 +19,13 @@ def main():
     cam = xiapi.Camera()
     cam.open_device()
     cam.set_exposure(20000)
+    cam.start_acquisition()
     img = xiapi.Image()
 
     # Initialise ROS components
-    pub = rospy.Publisher("test", String, queue_size=10)
-    rospy.init_node("cam")
-    rate = rospy.rate(10)
+    pub = rospy.Publisher("/test", String, queue_size=10)
+    rospy.init_node("main")
+    rate = rospy.Rate(5)
     
     # Main loop
     while not rospy.is_shutdown():
@@ -40,6 +40,7 @@ def main():
     rospy.loginfo("Closing camera...")
     cam.stop_acquisition()
     cam.close_device()
+
 
 
 if __name__ == "__main__":
