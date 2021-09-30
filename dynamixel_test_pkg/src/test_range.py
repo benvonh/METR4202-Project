@@ -14,6 +14,7 @@ def main():
     # setup
     pub = rospy.Publisher("/desired_joint_states", JointState, queue_size=10)
     rospy.init_node("test2")
+    rospy.sleep(3)
     rate = rospy.Rate(10)
 
     # Initial state
