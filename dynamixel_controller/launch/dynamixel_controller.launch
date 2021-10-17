@@ -1,0 +1,5 @@
+<launch>
+    <node name="dynamixel_controller" pkg="dynamixel_controller" type="publisher" />
+	<param name="config_filename" type="string" value="config.json" />
+    </node>
+</launch>
