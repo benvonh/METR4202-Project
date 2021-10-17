@@ -20,7 +20,7 @@ def main():
     # Initial state
     msg = JointState()
     msg.name = ['joint_1', 'joint_2', 'joint_3', 'joint_4']
-    msg.position = [0, 0, 0, 0]
+    msg.position = [0, math.pi/2, 0, 0]
     msg.velocity = [1, 1, 1, 1]
     pub.publish(msg)
     rospy.loginfo("Initial state: 0")
@@ -31,9 +31,9 @@ def main():
 
     incAngle = 0.1
     while not rospy.is_shutdown():
-        if msg.position[0] > math.pi:
+        if msg.position[0] > math.pi / 2:
             incAngle = -0.1
-        if msg.position[0] < -math.pi:
+        if msg.position[0] < -math.pi / 2:
             incAngle = 0.1
         msg.position = add_angle(msg.position, incAngle)
         rospy.loginfo(f"Angle: {msg.position[0]}")
