@@ -2,14 +2,8 @@ import json
 
 
 class Configuration:
-    def __init__(self, dimension, home, drop1, drop2, drop3, drop4):
+    def __init__(self, dimension):
         self.dimension = dimension
-        self.home = home
-        self.drop1 = drop1
-        self.drop2 = drop2
-        self.drop3 = drop3
-        self.drop4 = drop4
-
 
 class ConfigJsonSerializer:
     @staticmethod
