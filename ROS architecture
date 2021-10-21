@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2021-10-21T07:55:24.029Z" agent="5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36" etag="mD7lHswHWBXTtCbl3-OD" version="15.5.2" type="github">
+<mxfile host="app.diagrams.net" modified="2021-10-21T09:46:57.027Z" agent="5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36" etag="RVbuq4LbFxGBfD3HgcGI" version="15.5.2" type="github">
   <diagram id="bpAvLkCK_EtpyxXj6RAm" name="Page-1">
-    <mxGraphModel dx="573" dy="867" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+    <mxGraphModel dx="322" dy="737" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -181,6 +181,21 @@
         </mxCell>
         <mxCell id="kD2jX6u1nYuHquT_0j2x-93" value="&lt;b&gt;PLANNER&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Modern Computers;" vertex="1" parent="1">
           <mxGeometry x="1480" y="180" width="70" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="kD2jX6u1nYuHquT_0j2x-94" value="geometry_msgs/Pose" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Modern Computers;" vertex="1" parent="1">
+          <mxGeometry x="1660" y="370" width="120" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="kD2jX6u1nYuHquT_0j2x-95" value="std_msgs/Bool" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Modern Computers;" vertex="1" parent="1">
+          <mxGeometry x="1355" y="370" width="90" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="kD2jX6u1nYuHquT_0j2x-96" value="std_msgs/Bool" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Modern Computers;" vertex="1" parent="1">
+          <mxGeometry x="1195" y="210" width="90" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="kD2jX6u1nYuHquT_0j2x-97" value="std_msgs/Int8" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Modern Computers;" vertex="1" parent="1">
+          <mxGeometry x="1840" y="210" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="kD2jX6u1nYuHquT_0j2x-98" value="tf2_msgs/TFMessage" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Modern Computers;" vertex="1" parent="1">
+          <mxGeometry x="1820" y="50" width="120" height="20" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
