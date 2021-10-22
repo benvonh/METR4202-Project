@@ -2,7 +2,6 @@ import numpy as np
 np.set_printoptions(precision=2)
 
 
-global limit
 limit = 3 * np.pi / 4
 
 
@@ -54,7 +53,7 @@ def joint_angles(pos: list, rot: list, dim: dict) -> np.array or str:
     theta21 = np.arccos((z_offset - L1 * np.cos(theta1)) / L2) - theta1
     theta22 = np.arcsin((xy - L1 * np.sin(theta1)) / L2) - theta1
     angles[1] = theta1
-    angles[2] = theta22
+    angles[2] = theta21
     if z_flip:
         angles[1:3] *= -1
 
