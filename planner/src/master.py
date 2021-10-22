@@ -13,10 +13,26 @@ import json
 
 FILENAME = "/home/metr4202/catkin_ws/src/planner/src/preset.json"
 COL_THRESH = 50
+COL_LOOP = 20
 
 
 class Planner:
+    """
+    A planner node responsible for publishing the arm configuration and gripper
+    state. Iterates through four stages for each luggage successfully placed
+    in the drop-zone.
+    
+    @stage_1: Moves the arm to its home configuration.
+    @stage_2: Awaits for a fiducial marker to appear and remain stationary.
+              Records the colour of the target luggage.
+    @stage_3: Moves the arm to grab the target luggage.
+    @stage_4: Places the luggage at the correspondig drop-off zone matching
+              the preset colour. Resets to @stage_1.
+    """
+
     def __init__(self):
+        """Initialises all components of the Planner object including the node.
+        Loads the preset json file and sleeps 3 seconds before completing."""
         # Control
         presetFile = open(FILENAME, "r")
         self._preset = json.loads(presetFile.read())
@@ -47,13 +63,6 @@ class Planner:
         self._grip = Bool()
 
         # Planning
-        # WARNING: Do not access directly. Use corresponding methods instead to
-        #          keep subscriber callbacks thread-safe.
-        self.__joint_code = 0
-        self.__is_grip = False
-        self.__image = None
-        self.__transforms = None
-        self.__vertices = None
         self._stage = 0
 
     def joint_code(self, code: Int8):
@@ -89,14 +98,9 @@ class Planner:
     def transforms(self, data: FiducialTransformArray):
         self._mutex.acquire()
         if data:
-            print("expose you")
             self.__transforms = data.transforms
-            print("self", self.__transforms)
         else:
-            print("definitely exposed", self.__transforms)
             transforms_data = cp.deepcopy(self.__transforms)
-            print(self.__transforms)
-
         self._mutex.release()
         if not data:
             return transforms_data
@@ -104,7 +108,7 @@ class Planner:
     def vertices(self, data: FiducialArray):
         self._mutex.acquire()
         if data:
-            self.__vertices = data
+            self.__vertices = data.fiducials
         else:
             vertices_data = cp.deepcopy(self.__vertices)
         self._mutex.release()
@@ -112,6 +116,7 @@ class Planner:
             return vertices_data
 
     def set_pose_preset(self, preset):
+        """Sets the pose to the preset."""
         pos = preset["pos"]
         self._pose.position.x = pos['x']
         self._pose.position.y = pos['y']
@@ -123,33 +128,49 @@ class Planner:
         self._pose.orientation.w = rot['w']
     
     def set_pose_target(self, pos, rot):
-        self._pose.position.x = pos[0]
-        self._pose.position.y = pos[1]
-        self._pose.position.z = pos[2]
+        """Sets the pose to the postion and rotation."""
+        self._pose.position.x = pos.x
+        self._pose.position.y = pos.y
+        self._pose.position.z = pos.z
 
     def set_colour(self):
-        snap = self.images(None)
+        """"""
+        snap = self.image(None)
         array = self.vertices(None)
+        print(array)
         vert = next((fid for fid in array if \
-                fid.fiducial_id != self._target.fiducial_id), None)
+                fid.fiducial_id == self._target.fiducial_id), None)
         if vert is None:
             rospy.logwarn("Target fiducial not found")
             return
-        index = (snap.height * (round(vert.y0) - 3) + round(vert.x0) - 3) * 3
-        BGR = snap.data[index:index+3]
-        if BGR[0] - BGR[1] > COL_THRESH and BGR[0] - BGR[2] > COL_THRESH:
-            self._colour = "blue"
-        elif BGR[1] - BGR[0] > COL_THRESH and BGR[1] - BGR[2] > COL_THRESH:
-            self._colour = "green"
-        elif BGR[2] - BGR[0] > COL_THRESH and BGR[2] - BGR[1] > COL_THRESH:
-            self._colour = "red"
-        elif BGR[1] - BGR[0] > COL_THRESH and BGR[2] - BGR[0] > COL_THRESH \
-                and BGR[1] - BGR[2] < COL_THRESH:
-            self._colour = "yellow"
-        else:
+        print(vert)
+        x = min(vert.x0, min(vert.x1, min(vert.x2, vert.x3)))
+        y = min(vert.y0, min(vert.y1, min(vert.y2, vert.y3)))
+        i = 0
+        while i < COL_LOOP:
+            rospy.loginfo(f"Sweeping pixel colours [{i + 1}/{COL_LOOP}]")
+            index = (snap.height * (round(y - i - 1)) + round(x - i)) * 3
+            BGR = [int(col) for col in snap.data[index:index + 3]]
+            rospy.loginfo(f"BGR: {int(BGR[0])} {int(BGR[1])} {int(BGR[2])}")
+            if BGR[0] - BGR[1] > COL_THRESH and BGR[0] - BGR[2] > COL_THRESH:
+                self._colour = "blue"
+                break
+            elif BGR[1] - BGR[0] > COL_THRESH and BGR[1] - BGR[2] > COL_THRESH:
+                self._colour = "green"
+                break
+            elif BGR[2] - BGR[0] > COL_THRESH and BGR[2] - BGR[1] > COL_THRESH:
+                self._colour = "red"
+                break
+            elif BGR[1] - BGR[0] > COL_THRESH and \
+                    BGR[2] - BGR[0] > COL_THRESH and \
+                    BGR[1] - BGR[2] < COL_THRESH:
+                self._colour = "yellow"
+                break
+            i += 1
+        if i == COL_LOOP:
             rospy.logwarn("Target colour could not be determined")
-            return
-        rospy.loginfo("Target colour is " + self._colour)
+        else:
+            rospy.loginfo("Target colour is " + self._colour)
 
     def wait_move(self):
         while self.joint_code(None) == 1 and not rospy.is_shutdown():
@@ -177,11 +198,13 @@ class Planner:
         target_confirm = False
         while not target_confirm and not rospy.is_shutdown():
             scan = self.transforms(None)
-            #scan = self.__transforms.transforms
-            if len(scan) > 0:
+            if len(scan) > 1:
+                i = 1 if scan[0].fiducial_id == 0 else 0
                 if self._target is None:
-                    self._target = scan[0]
-                elif self._target.fiducial_id == scan[0].fiducial_id:
+                    self._target = scan[i]
+                    rospy.loginfo("Targetting fiducial id " \
+                            f"{self._target.fiducial_id}")
+                elif self._target.fiducial_id == scan[i].fiducial_id:
                     target_reach = np.linalg.norm(
                             [
                                 self._target.transform.translation.x,
@@ -190,13 +213,14 @@ class Planner:
                             ])
                     scan_reach = np.linalg.norm(
                             [
-                                scan[0].transform.translation.x,
-                                scan[1].transform.translation.y,
-                                scan[2].transform.translation.z
+                                scan[i].transform.translation.x,
+                                scan[i].transform.translation.y,
+                                scan[i].transform.translation.z
                             ])
                     shift = abs((target_reach - scan_reach) / target_reach)
                     if shift < 0.01:
-                        rospy.loginfo("Fiducial marker found!")
+                        rospy.loginfo("Fiducial marker " \
+                                f"{self._target.fiducial_id} ready")
                         self.set_colour()
                         target_confirm = True
                 else:
@@ -208,11 +232,12 @@ class Planner:
 
     def stage_3(self):
         rospy.loginfo("Moving to fiducial marker...")
-        pos, rot = self._tfBuffer.lookupTransform(
+        pos = self._tfBuffer.lookup_transform(
                 "fiducial_0",
                 f"fiducial_{self._target.fiducial_id}",
-                rospy.Time())
-        pos[1] -= 0.055
+                rospy.Time()).transform.translation
+        pos.y -= 0.055
+        rot = None
         self.set_pose_target(pos, rot)
         self._conf_pub.publish(self._pose)
         if self.wait_move() > 1:
@@ -228,7 +253,9 @@ class Planner:
         rospy.loginfo("Moving to drop-off zone...")
         dropzone = None
         for zone, spec in self._preset.items():
-            if spec["colours"] == self._colour:
+            if "drop" not in zone:
+                continue
+            if spec["colour"] == self._colour:
                 dropzone = zone
                 break
         if dropzone is None:
