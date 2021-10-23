@@ -2,7 +2,7 @@ import numpy as np
 np.set_printoptions(precision=2)
 
 
-limit = 3 * np.pi / 4
+LIMIT= 3 * np.pi / 4
 
 
 def joint_angles(pos: list, rot: list, dim: dict) -> np.array or str:
@@ -31,9 +31,9 @@ def joint_angles(pos: list, rot: list, dim: dict) -> np.array or str:
     # Joint angle 1
     xy_angle = np.arctan2(y, x)
     z_flip = True
-    if xy_angle > limit:
+    if xy_angle > LIMIT:
         xy_angle -= np.pi
-    elif xy_angle < -limit:
+    elif xy_angle < -LIMIT:
         xy_angle += np.pi
     else:
         z_flip = False
@@ -61,10 +61,10 @@ def joint_angles(pos: list, rot: list, dim: dict) -> np.array or str:
     # TODO : implement after gripper is added
     angles[3] = rot[2]
 
-    if not -limit < angles[1] < limit:
-        return f"Joint angle 2 ({abs(angles[1])}) exceeding limit ({limit})"
-    if not -limit < angles[2] < limit:
-        return f"Joint angle 3 ({abs(angles[2])}) exceeding limit ({limit})"
+    if not -limit < angles[1] < LIMIT:
+        return f"Joint angle 2 ({abs(angles[1])}) exceeding limit ({LIMIT})"
+    if not -limit < angles[2] < LIMIT:
+        return f"Joint angle 3 ({abs(angles[2])}) exceeding limit ({LIMIT})"
     
     if angles[0] > np.pi:
         angles[0] = 2*np.pi - angles[0]
