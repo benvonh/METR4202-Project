@@ -10,6 +10,8 @@ def move_gripper(grip_state):
     vice versa.
     :param grip_state: std_msg.msg.Bool object
     """
+    global state
+    state = grip_state.data
     if grip_state.data:
         grip_sg90.set_servo_pulsewidth(18, 1220) # Fully closed (add value to close looser)
         rospy.loginfo("The gripper has been closed")
@@ -23,14 +25,21 @@ def move_gripper(grip_state):
 
 def grip_control():
     #initialise Node
+    global state
     rospy.init_node('grip_control', anonymous = True)
 
     # subscribe to the topic that controls gripper
-    rospy.Subscriber('/move_sg90', Bool, move_gripper)
+    rospy.Subscriber('desired_gripper_state', Bool, move_gripper)
+    state_pub = rospy.Publisher('gripper_state', Bool, queue_size=2)
+    rate = rospy.Rate(2)
     print("hi")
-    rospy.spin()
+    while not ropsy.is_shutdown():
+        state_pub.pub(state)
+        rate.sleep()
+        
 
 if __name__ == '__main__':
+    state = False
     grip_sg90 = pigpio.pi()
     grip_sg90.set_mode(18, pigpio.OUTPUT)
     grip_control()
