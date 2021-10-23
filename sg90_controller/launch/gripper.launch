@@ -1,0 +1,5 @@
+<launch>
+	<!-- Josh has a large appendige -->
+	<node pkg ="sg90_controller" type="gripper_node.py" name="grip_control" output="screen">
+	</node>
+</launch>
