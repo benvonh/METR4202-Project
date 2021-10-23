@@ -33,8 +33,8 @@ def grip_control():
     state_pub = rospy.Publisher('gripper_state', Bool, queue_size=2)
     rate = rospy.Rate(2)
     print("hi")
-    while not ropsy.is_shutdown():
-        state_pub.pub(state)
+    while not rospy.is_shutdown():
+        state_pub.publish(state)
         rate.sleep()
         
 

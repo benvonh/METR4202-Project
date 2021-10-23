@@ -13,6 +13,7 @@ import json
 
 
 FILENAME = "/home/metr4202/catkin_ws/src/planner/src/preset.json"
+BASE_FIDUCIAL = 4
 
 
 class Planner:
@@ -161,6 +162,10 @@ class Planner:
 
     def set_colour(self):
         """"""
+        self_colour = 'red'
+        rospy.loginfo("lol its red")
+        return
+
         offset = 1
         while self._colour is None and not rospy.is_shutdown():
             snap = self.image(None)
@@ -230,9 +235,8 @@ class Planner:
         return self.joint_code(None)
 
     def wait_grip(self, set_grip):
-        return
-#        while self.is_grip(None) != set_grip and not rospy.is_shutdown():
-#            rospy.sleep(1)
+        while self.is_grip(None) != set_grip and not rospy.is_shutdown():
+            rospy.sleep(1)
 
     def stage_1(self):
         rospy.loginfo("Moving to home configuration...")
@@ -251,7 +255,7 @@ class Planner:
         while not target_confirm and not rospy.is_shutdown():
             scan = self.transforms(None)
             if len(scan) > 1:
-                i = 1 if scan[0].fiducial_id == 0 else 0
+                i = 1 if scan[0].fiducial_id == BASE_FIDUCIAL else 0
                 if self._target is None:
                     self._target = scan[i]
                     rospy.loginfo("Targetting fiducial id " \
@@ -285,10 +289,10 @@ class Planner:
     def stage_3(self):
         rospy.loginfo("Moving to fiducial marker...")
         pos = self._tfBuffer.lookup_transform(
-                "fiducial_0",
+                f"fiducial_{BASE_FIDUCIAL}",
                 f"fiducial_{self._target.fiducial_id}",
                 rospy.Time()).transform.translation
-        pos.y -= 0.055
+        pos.z -= 0.305
         rot = None
         self.set_pose_target(pos, rot)
         self._conf_pub.publish(self._pose)
@@ -334,26 +338,6 @@ class Planner:
         }
         self._stage = 1
         while not rospy.is_shutdown():
-            x = 0
-            y = 0
-            colour = "black"
-            while (colour == 'black' or colour == 'white') and not rospy.is_shutdown():
-                snap = self.image(None)
-                index = int((snap.width * (round(y)) + x) * 3)
-                BGR = np.array([int(bit) for bit in \
-                            snap.data[index:index + 3]]).astype(np.uint8)
-                rospy.loginfo(f"x: {x}, y: {y}")
-                rospy.loginfo(f"BGR: {int(BGR[0])} {int(BGR[1])} {int(BGR[2])}")
-                colour = self._colour_detector.detect_color(BGR)
-                rospy.loginfo("Colour: " + colour)
-
-                
-                
-                x += 1
-                y += 1
-            break
-
-            """
             exec_stage = stage.get(self._stage, None)
             if exec_stage is None:
                 rospy.logfatal("Bad programming :(")
@@ -363,7 +347,6 @@ class Planner:
             rospy.loginfo("--------------------------------------------------")
             exec_stage()
             rospy.loginfo("__________________________________________________")
-            """
 
 
 def main():
