@@ -4,6 +4,7 @@ from geometry_msgs.msg import Pose
 from sensor_msgs.msg import Image
 from std_msgs.msg import Int8, Bool
 from threading import Thread, Lock
+import color_detector as cd
 import numpy as np
 import copy as cp
 import tf2_ros
@@ -12,8 +13,6 @@ import json
 
 
 FILENAME = "/home/metr4202/catkin_ws/src/planner/src/preset.json"
-COL_THRESH = 50
-COL_LOOP = 20
 
 
 class Planner:
@@ -38,6 +37,33 @@ class Planner:
         self._preset = json.loads(presetFile.read())
         self._mutex = Lock()
         self._target = None
+
+        # Colour detection
+        current_dir = "/home/metr4202/catkin_ws/src/planner/src"
+        try:
+            file = open(current_dir + "/colors.config", 'r')
+            i = 0
+            for line in file:
+                entries = line.split(' ')
+                values = [int(x) for x in entries]
+                if i == 0:
+                    bgr_r = np.array([values[0], values[1], values[2]]).astype(np.uint8)
+                if i == 1:
+                    bgr_g = np.array([values[0], values[1], values[2]]).astype(np.uint8)
+                if i == 2:
+                    bgr_b = np.array([values[0], values[1], values[2]]).astype(np.uint8)
+                if i == 3:
+                    bgr_y = np.array([values[0], values[1], values[2]]).astype(np.uint8)
+                i += 1
+        except FileNotFoundError:
+            print("Could not load color.config file")
+            print("Setting to default values:")
+            bgr_r = np.array([0, 0, 255]).astype(np.uint8)
+            bgr_g = np.array([0, 255, 0]).astype(np.uint8)
+            bgr_b = np.array([255, 0, 0]).astype(np.uint8)
+            bgr_y = np.array([0, 255, 255]).astype(np.uint8)
+
+        self._colour_detector = cd.ColorDetector(bgr_r, bgr_g, bgr_b, bgr_y)
         self._colour = None
 
         # Node
@@ -135,42 +161,68 @@ class Planner:
 
     def set_colour(self):
         """"""
-        snap = self.image(None)
-        array = self.vertices(None)
-        print(array)
-        vert = next((fid for fid in array if \
-                fid.fiducial_id == self._target.fiducial_id), None)
-        if vert is None:
-            rospy.logwarn("Target fiducial not found")
-            return
-        print(vert)
-        x = min(vert.x0, min(vert.x1, min(vert.x2, vert.x3)))
-        y = min(vert.y0, min(vert.y1, min(vert.y2, vert.y3)))
-        i = 0
-        while i < COL_LOOP:
-            rospy.loginfo(f"Sweeping pixel colours [{i + 1}/{COL_LOOP}]")
-            index = (snap.height * (round(y - i - 1)) + round(x - i)) * 3
-            BGR = [int(col) for col in snap.data[index:index + 3]]
-            rospy.loginfo(f"BGR: {int(BGR[0])} {int(BGR[1])} {int(BGR[2])}")
-            if BGR[0] - BGR[1] > COL_THRESH and BGR[0] - BGR[2] > COL_THRESH:
-                self._colour = "blue"
-                break
-            elif BGR[1] - BGR[0] > COL_THRESH and BGR[1] - BGR[2] > COL_THRESH:
-                self._colour = "green"
-                break
-            elif BGR[2] - BGR[0] > COL_THRESH and BGR[2] - BGR[1] > COL_THRESH:
-                self._colour = "red"
-                break
-            elif BGR[1] - BGR[0] > COL_THRESH and \
-                    BGR[2] - BGR[0] > COL_THRESH and \
-                    BGR[1] - BGR[2] < COL_THRESH:
-                self._colour = "yellow"
-                break
-            i += 1
-        if i == COL_LOOP:
-            rospy.logwarn("Target colour could not be determined")
-        else:
-            rospy.loginfo("Target colour is " + self._colour)
+        offset = 1
+        while self._colour is None and not rospy.is_shutdown():
+            snap = self.image(None)
+            array = []
+            while len(array) == 0 and not rospy.is_shutdown():
+                array = self.vertices(None)
+            vert = array[0]
+            #vert = next((fid for fid in array if \
+            #        fid.fiducial_id == self._target.fiducial_id), None)
+            if vert is None:
+                rospy.logfatal("Target fiducial not found")
+                return
+            x = min(vert.x0, min(vert.x1, min(vert.x2, vert.x3)))
+            y = min(vert.y0, min(vert.y1, min(vert.y2, vert.y3)))
+            rospy.loginfo(f"Sweeping pixel colours [{offset}]")
+            x = 0
+            y = 0
+            while not rospy.is_shutdown():
+                snap = self.image(None)
+                index = int((snap.width * (round(x) - offset) + y - offset) * 3)
+                BGR = np.array([int(bit) for bit in \
+                            snap.data[index:index + 3]]).astype(np.uint8)
+                rospy.loginfo(f"x: {x}, y: {y}")
+                rospy.loginfo(f"BGR: {int(BGR[0])} {int(BGR[1])} {int(BGR[2])}")
+                rospy.loginfo("Colour: " + self._colour_detector.detect_color(BGR))
+
+
+                x += 1
+                y += 1
+
+
+                """
+                array = []
+                while len(array) == 0 and not rospy.is_shutdown():
+                    array = self.vertices(None)
+                vert = array[0]
+                #vert = next((fid for fid in array if \
+                #        fid.fiducial_id == self._target.fiducial_id), None)
+                if vert is None:
+                    rospy.logfatal("Target fiducial not found")
+                    return
+                x = min(vert.x0, min(vert.x1, min(vert.x2, vert.x3)))
+                y = min(vert.y0, min(vert.y1, min(vert.y2, vert.y3)))
+                rospy.loginfo(f"x: {x}, y: {y}")
+                while offset < 20:
+                    index = int((snap.width * (round(x) - offset) + y - offset) * 3)
+                    BGR = np.array([int(bit) for bit in \
+                            snap.data[index:index + 3]]).astype(np.uint8)
+                    rospy.loginfo(f"BGR: {int(BGR[0])} {int(BGR[1])} {int(BGR[2])}")
+                    rospy.loginfo("Colour: " + self._colour_detector.detect_color(BGR))
+                    offset += 1
+                offset = 0
+                """
+                input()
+            break
+
+
+            self._colour = self._colour_detector.detect_color(BGR)
+            if self._colour == 'black' or self._colour == 'white':
+                self._colour = None
+            offset += 1
+        rospy.loginfo("Target colour is " + self._colour)
 
     def wait_move(self):
         while self.joint_code(None) == 1 and not rospy.is_shutdown():
@@ -282,6 +334,26 @@ class Planner:
         }
         self._stage = 1
         while not rospy.is_shutdown():
+            x = 0
+            y = 0
+            colour = "black"
+            while (colour == 'black' or colour == 'white') and not rospy.is_shutdown():
+                snap = self.image(None)
+                index = int((snap.width * (round(y)) + x) * 3)
+                BGR = np.array([int(bit) for bit in \
+                            snap.data[index:index + 3]]).astype(np.uint8)
+                rospy.loginfo(f"x: {x}, y: {y}")
+                rospy.loginfo(f"BGR: {int(BGR[0])} {int(BGR[1])} {int(BGR[2])}")
+                colour = self._colour_detector.detect_color(BGR)
+                rospy.loginfo("Colour: " + colour)
+
+                
+                
+                x += 1
+                y += 1
+            break
+
+            """
             exec_stage = stage.get(self._stage, None)
             if exec_stage is None:
                 rospy.logfatal("Bad programming :(")
@@ -291,6 +363,7 @@ class Planner:
             rospy.loginfo("--------------------------------------------------")
             exec_stage()
             rospy.loginfo("__________________________________________________")
+            """
 
 
 def main():
