@@ -66,3 +66,10 @@ sg90_controller:
 ximea_ros_cam:
   CSIRO package for subscribing to sensor_msgs/Image.
   https://github.com/wavelab/ximea_ros_cam
+  
+# Credits
+Benjamin Von-Snarski; 45287008
+Xavier Spinella; 45328107
+Harrison Brown; 45821907
+Benedict Panizza; 45853195
+Kurt Talu;
