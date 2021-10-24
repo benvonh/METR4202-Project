@@ -3,7 +3,7 @@ Github repository link:
 
 https://github.com/git-von/METR4202-Project/tree/master/sg90_controller/launch
 
-#Description
+# Description
 
 Catkin workspace packages used to control a Dynamixel servo-actuated arm, with 4 active degrees of freedom in a pick and place application. Utilisation of Aruco tags, the Aruco detect library, Ximea ros cam library, and the ros package tf2 are essential for the function of this project. Aruco tags were chosen as, in combination with the Aruco Detect library, the transformation from the camera can be found - thus, the transformation from the camera to two different fiducials can be fed into tf2, in order to retrieve the transform from one fiducial to the other. Additionally, the large range of unique Aruco fiducial IDs enable the software to discern between different objects. The Ximea Ros Cam library was chosen as it provides the capability to stream camera to various topics. Gripper actuation is achieved through the use of an SG90 servo and the pigpio library. Pigpio was chosen as it is one of the smoothest ways to move small servos such as the SG90.
 
