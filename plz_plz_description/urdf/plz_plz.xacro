@@ -4,6 +4,12 @@
 <xacro:include filename="$(find plz_plz_description)/urdf/materials.xacro" />
 <xacro:include filename="$(find plz_plz_description)/urdf/plz_plz.trans" />
 <xacro:include filename="$(find plz_plz_description)/urdf/plz_plz.gazebo" />
+<link name="world" />
+
+<joint name="Dummy" type="fixed">
+  <parent link="world"/>
+  <child link="base_link"/>
+</joint>
 
 <link name="base_link">
   <inertial>
@@ -498,7 +504,7 @@
   <child link="alternate_design_top_1"/>
 </joint>
 
-<joint name="joint_1" type="continuous">
+<joint name="Rev6" type="continuous">
   <origin rpy="0 0 0" xyz="0.136 -0.092 0.1555"/>
   <parent link="combined_servo_2_1"/>
   <child link="link1_redo_1"/>
@@ -511,14 +517,14 @@
   <child link="combined_servo_v1_1"/>
 </joint>
 
-<joint name="joint_2" type="continuous">
+<joint name="Rev8" type="continuous">
   <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
   <parent link="combined_servo_v1_1"/>
   <child link="link_2_drive_side_1_1"/>
   <axis xyz="-0.0 1.0 0.0"/>
 </joint>
 
-<joint name="joint_3" type="continuous">
+<joint name="Rev9" type="continuous">
   <origin rpy="0 0 0" xyz="0.11 0.0 0.0"/>
   <parent link="link_2_drive_side_1_1"/>
   <child link="combined_servo_34_1"/>
@@ -543,7 +549,7 @@
   <child link="combined_servo_444_1"/>
 </joint>
 
-<joint name="joint_4" type="continuous">
+<joint name="Rev13" type="continuous">
   <origin rpy="0 0 0" xyz="0.0 0.0 -0.04"/>
   <parent link="combined_servo_444_1"/>
   <child link="uni_top_1"/>
