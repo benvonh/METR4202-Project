@@ -1,0 +1,208 @@
+<?xml version="1.0" ?>
+<robot name="simgrpgaz" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:include filename="$(find simgrpgaz_description)/urdf/materials.xacro" />
+<xacro:include filename="$(find simgrpgaz_description)/urdf/simgrpgaz.trans" />
+<xacro:include filename="$(find simgrpgaz_description)/urdf/simgrpgaz.gazebo" />
+
+<link name="world" />
+
+<joint name="Dummy" type="fixed">
+  <parent link="world"/>
+  <child link="base_link"/>
+</joint>
+
+<link name="base_link">
+  <inertial>
+    <origin rpy="0 0 0" xyz="1.1353520836862479e-05 -0.03608312930420336 0.004652563930069382"/>
+    <mass value="0.09422333946324658"/>
+    <inertia ixx="1.1e-05" ixy="0.0" ixz="0.0" iyy="5e-05" iyz="-0.0" izz="4.5e-05"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <geometry>
+      <mesh filename="package://simgrpgaz_description/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <geometry>
+      <mesh filename="package://simgrpgaz_description/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="grip_arm_1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="0.0018515751202100826 -0.013375632461518024 4.6501054292141103e-07"/>
+    <mass value="0.08342484657251212"/>
+    <inertia ixx="2.6e-05" ixy="-4e-06" ixz="-0.0" iyy="4e-06" iyz="-0.0" izz="2.7e-05"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0.0235 0.03625 -0.004749"/>
+    <geometry>
+      <mesh filename="package://simgrpgaz_description/meshes/grip_arm_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0.0235 0.03625 -0.004749"/>
+    <geometry>
+      <mesh filename="package://simgrpgaz_description/meshes/grip_arm_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="grip_arm2_1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.0018722371577548844 -0.013372755968677534 4.6492549118232196e-07"/>
+    <mass value="0.08342484657251212"/>
+    <inertia ixx="2.6e-05" ixy="4e-06" ixz="-0.0" iyy="4e-06" iyz="0.0" izz="2.7e-05"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.0235 0.03625 -0.004749"/>
+    <geometry>
+      <mesh filename="package://simgrpgaz_description/meshes/grip_arm2_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.0235 0.03625 -0.004749"/>
+    <geometry>
+      <mesh filename="package://simgrpgaz_description/meshes/grip_arm2_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="swivel_mount_1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="0.002800493256251574 0.025319778743836473 -0.013846542240748032"/>
+    <mass value="0.04656652043694409"/>
+    <inertia ixx="1.2e-05" ixy="0.0" ixz="-0.0" iyy="9e-06" iyz="3e-06" izz="5e-06"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="0.00325 0.035 -0.016749"/>
+    <geometry>
+      <mesh filename="package://simgrpgaz_description/meshes/swivel_mount_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="0.00325 0.035 -0.016749"/>
+    <geometry>
+      <mesh filename="package://simgrpgaz_description/meshes/swivel_mount_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="sg90_servo_1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.03133235365396303 0.011619667022920756 -0.01764953503198278"/>
+    <mass value="0.05342056406351994"/>
+    <inertia ixx="3e-06" ixy="-0.0" ixz="0.0" iyy="3e-06" iyz="-0.0" izz="5e-06"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.026551 0.0355 -0.004499"/>
+    <geometry>
+      <mesh filename="package://simgrpgaz_description/meshes/sg90_servo_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.026551 0.0355 -0.004499"/>
+    <geometry>
+      <mesh filename="package://simgrpgaz_description/meshes/sg90_servo_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="servo_mount_1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.007413618537356836 -0.023278155183431792 0.001908684463647014"/>
+    <mass value="0.03109337233353692"/>
+    <inertia ixx="5e-06" ixy="-0.0" ixz="0.0" iyy="2e-06" iyz="1e-06" izz="5e-06"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.0031 0.008 0.019051"/>
+    <geometry>
+      <mesh filename="package://simgrpgaz_description/meshes/servo_mount_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.0031 0.008 0.019051"/>
+    <geometry>
+      <mesh filename="package://simgrpgaz_description/meshes/servo_mount_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="SERVO_ARM_1">
+  <inertial>
+    <origin rpy="0 0 0" xyz="-0.0034039495328253254 0.0037983911480194803 0.012207195555185693"/>
+    <mass value="0.009506568417112423"/>
+    <inertia ixx="1e-06" ixy="0.0" ixz="0.0" iyy="1e-06" iyz="-0.0" izz="0.0"/>
+  </inertial>
+  <visual>
+    <origin rpy="0 0 0" xyz="-0.012 0.0189 0.013151"/>
+    <geometry>
+      <mesh filename="package://simgrpgaz_description/meshes/SERVO_ARM_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin rpy="0 0 0" xyz="-0.012 0.0189 0.013151"/>
+    <geometry>
+      <mesh filename="package://simgrpgaz_description/meshes/SERVO_ARM_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<gazebo>
+  <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+    <robotNamespace>/simgrpgaz</robotNamespace>
+    <legacyModeNS>true</legacyModeNS>
+  </plugin>
+</gazebo>
+
+<joint name="Rev1" type="continuous">
+  <origin rpy="0 0 0" xyz="-0.0235 -0.03625 0.004749"/>
+  <parent link="base_link"/>
+  <child link="grip_arm_1"/>
+  <axis xyz="0.0 0.0 -1.0"/>
+</joint>
+
+<joint name="Rev2" type="continuous">
+  <origin rpy="0 0 0" xyz="0.0235 -0.03625 0.004749"/>
+  <parent link="base_link"/>
+  <child link="grip_arm2_1"/>
+  <axis xyz="0.0 0.0 -1.0"/>
+</joint>
+
+<joint name="Rigid3" type="fixed">
+  <origin rpy="0 0 0" xyz="-0.00325 -0.035 0.016749"/>
+  <parent link="base_link"/>
+  <child link="swivel_mount_1"/>
+</joint>
+
+<joint name="Rigid4" type="fixed">
+  <origin rpy="0 0 0" xyz="0.029801 -0.0005 -0.01225"/>
+  <parent link="swivel_mount_1"/>
+  <child link="sg90_servo_1"/>
+</joint>
+
+<joint name="Rigid5" type="fixed">
+  <origin rpy="0 0 0" xyz="0.00635 0.027 -0.0358"/>
+  <parent link="swivel_mount_1"/>
+  <child link="servo_mount_1"/>
+</joint>
+
+<joint name="Rev6" type="continuous">
+  <origin rpy="0 0 0" xyz="-0.014551 0.0166 -0.01765"/>
+  <parent link="sg90_servo_1"/>
+  <child link="SERVO_ARM_1"/>
+  <axis xyz="1.0 -0.0 -0.0"/>
+</joint>
+
+</robot>

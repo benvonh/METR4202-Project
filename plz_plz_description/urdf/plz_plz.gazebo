@@ -1,0 +1,164 @@
+<?xml version="1.0" ?>
+<robot name="plz_plz" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+<xacro:property name="body_color" value="Gazebo/Silver" />
+
+<gazebo>
+  <plugin filename="libgazebo_ros_control.so" name="control"/>
+</gazebo>
+<gazebo reference="base_link">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+  <gravity>true</gravity>
+</gazebo>
+
+<gazebo reference="combined_servo_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="rotor_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="alternate_design_base_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="combined_servo_2_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="alternate_design_top_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="link1_redo_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="combined_servo_v1_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="link_2_drive_side_1_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="combined_servo_34_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="link_2_bear_side_2_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="custom_attachment_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="combined_servo_444_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="uni_top_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="uni_ball_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="swivel_mount_uni_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="servo_mount_v2_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="sg90_servo_model_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="housing_v2_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="schmoothgriparm1_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="smooth_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+<gazebo reference="servo_arm_v2_1">
+  <material>${body_color}</material>
+  <mu1>0.2</mu1>
+  <mu2>0.2</mu2>
+  <selfCollide>true</selfCollide>
+</gazebo>
+
+</robot>
