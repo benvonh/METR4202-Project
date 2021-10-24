@@ -21,6 +21,9 @@ To install the METR4202-Project packages, git clone the repository into the catk
 To launch the pick and place program execute the following commands in any directory:
 
 ```python
+# Launches the daemon that is essential for pigpio function
+sudo pigpiod
+
 # Launch the controller for Dynamixel servos
 roslaunch dynamixel_controller dynamixel_controller.launch
 
@@ -34,9 +37,6 @@ roslaunch planner camera.launch
 # Launches the planner.py file which is the state machine
 # that controls the whole system
 roslaunch planner planner.launch
-
-# Launches the daemon that is essential for pigpio function
-sudo pigpiod
 ```
 
 # Package Overview
