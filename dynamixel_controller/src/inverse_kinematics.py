@@ -48,7 +48,7 @@ def joint_angles(pos: list, rot: list, dim: dict) -> np.array or str:
     if r > L1 + L2:
         return f"Reach ({r}) out of range of total link length ({L1+L2})"
     phi = np.arctan2(xy, z_offset)
-    alpha = np.arccos((r**2 + L1**2 - L2**2) / (2*r*L1))
+    alpha = np.arccos((r**2 + L1**2 - L2**2) / (2 * r * L1))
     theta1 = phi - alpha
     theta2 = np.arccos((z_offset - L1 * np.cos(theta1)) / L2) - theta1
     angles[1] = theta1
