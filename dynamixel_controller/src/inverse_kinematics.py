@@ -2,7 +2,7 @@ import numpy as np
 np.set_printoptions(precision=2)
 
 
-LIMIT= 3 * np.pi / 4
+LIMIT = 3 * np.pi / 4
 
 
 def joint_angles(pos: list, rot: list, dim: dict) -> np.array or str:
@@ -40,30 +40,29 @@ def joint_angles(pos: list, rot: list, dim: dict) -> np.array or str:
     angles[0] = xy_angle
     
     # Joint angle 2 & 3
-    z_offset = z - dim["link1"]
+    z_offset = z - dim["link1"] + dim["link4"]
     L1 = dim["link2"]
     L2 = dim["link3"]
     xy = np.sqrt(x**2 + y**2)
     r = np.sqrt(xy**2 + z_offset**2)
-    if r > L1 + L2:
-        return f"Reach ({r}) out of range of total link length ({L1+L2})"
+    gam = (r**2 + L1**2 - L2**2) / (2 * r * L1)
+    if gam > 1:
+        return f"Reach ({r}) out of range"
     phi = np.arctan2(xy, z_offset)
-    alpha = np.arccos((r**2 + L1**2 - L2**2) / (2*r*L1))
+    alpha = np.arccos(gam)
     theta1 = phi - alpha
-    theta21 = np.arccos((z_offset - L1 * np.cos(theta1)) / L2) - theta1
-    theta22 = np.arcsin((xy - L1 * np.sin(theta1)) / L2) - theta1
-    angles[1] = theta1
-    angles[2] = theta21
+    theta2 = np.arccos((z_offset - L1 * np.cos(theta1)) / L2) - theta1
+    angles[1] = -theta1
+    angles[2] = theta2
     if z_flip:
         angles[1:3] *= -1
 
     # Joint angle 4
-    # TODO : implement after gripper is added
-    angles[3] = rot[2]
+    angles[3] = rot[2] + np.pi / 4
 
-    if not -limit < angles[1] < LIMIT:
+    if not -LIMIT < angles[1] < LIMIT:
         return f"Joint angle 2 ({abs(angles[1])}) exceeding limit ({LIMIT})"
-    if not -limit < angles[2] < LIMIT:
+    if not -LIMIT < angles[2] < LIMIT:
         return f"Joint angle 3 ({abs(angles[2])}) exceeding limit ({LIMIT})"
     
     if angles[0] > np.pi:

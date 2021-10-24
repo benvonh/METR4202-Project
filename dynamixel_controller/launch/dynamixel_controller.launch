@@ -1,7 +1,8 @@
 <launch>
-    <node name="dynamixel_controller" pkg="dynamixel_controller" type="publisher" />
-	<param name="config_filename" type="string" value="config.json" />
+    <node name="dynamixel_controller" pkg="dynamixel_controller" type="dynamixel_controller.py">
+	<param name="config_filename" type="string" value="$(find dynamixel_controller)/src/config.json" />
     </node>
+<<<<<<< HEAD
 
     <arg default="$(find plz_plz_description)/urdf/plz_plz.xacro" name="model"/>
     <arg default="true" name="gui"/>
@@ -11,4 +12,7 @@
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
     <node args="-d $(arg rvizconfig)" name="rviz" pkg="rviz" required="true" type="rviz"/>
+=======
+    <include file="$(find dynamixel_interface)/launch/dynamixel_interface_controller.launch" />
+>>>>>>> 4075dc46bd71d9da51d5c1a0477bef01935ae328
 </launch>

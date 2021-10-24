@@ -12,7 +12,8 @@ import rospy
 import json
 
 
-FILENAME = "/home/metr4202/catkin_ws/src/planner/src/preset.json"
+PATH = "/home/metr4202/catkin_ws/src/planner/src"
+BASE_FIDUCIAL = 4
 
 
 class Planner:
@@ -33,15 +34,14 @@ class Planner:
         """Initialises all components of the Planner object including the node.
         Loads the preset json file and sleeps 3 seconds before completing."""
         # Control
-        presetFile = open(FILENAME, "r")
+        presetFile = open(PATH + '/preset.json', "r")
         self._preset = json.loads(presetFile.read())
         self._mutex = Lock()
         self._target = None
 
         # Colour detection
-        current_dir = "/home/metr4202/catkin_ws/src/planner/src"
         try:
-            file = open(current_dir + "/colors.config", 'r')
+            file = open(PATH + "/colors.config", 'r')
             i = 0
             for line in file:
                 entries = line.split(' ')
@@ -60,7 +60,7 @@ class Planner:
             print("Setting to default values:")
             bgr_r = np.array([0, 0, 255]).astype(np.uint8)
             bgr_g = np.array([0, 255, 0]).astype(np.uint8)
-            bgr_b = np.array([255, 0, 0]).astype(np.uint8)
+            bgr_b = np.array([255, i0, 0]).astype(np.uint8)
             bgr_y = np.array([0, 255, 255]).astype(np.uint8)
 
         self._colour_detector = cd.ColorDetector(bgr_r, bgr_g, bgr_b, bgr_y)
@@ -72,12 +72,12 @@ class Planner:
                 queue_size=10)
         self._grip_pub = rospy.Publisher("desired_gripper_state", Bool,
                 queue_size=10)
-        rospy.Subscriber("/configuration", Int8, self.joint_code)
-        rospy.Subscriber("/gripper_state", Bool, self.is_grip)
-        rospy.Subscriber("/ximea_cam/image_raw", Image, self.image)
-        rospy.Subscriber("/fiducial_transforms",
+        rospy.Subscriber("configuration", Int8, self.joint_code)
+        rospy.Subscriber("gripper_state", Bool, self.is_grip)
+        rospy.Subscriber("ximea_cam/image_raw", Image, self.image)
+        rospy.Subscriber("fiducial_transforms",
                 FiducialTransformArray, self.transforms)
-        rospy.Subscriber("/fiducial_vertices",
+        rospy.Subscriber("fiducial_vertices",
                 FiducialArray, self.vertices)
         self._tfBuffer = tf2_ros.Buffer()
         tf2_ros.TransformListener(self._tfBuffer)
@@ -158,9 +158,17 @@ class Planner:
         self._pose.position.x = pos.x
         self._pose.position.y = pos.y
         self._pose.position.z = pos.z
+        self._pose.orientation.x = rot.x
+        self._pose.orientation.y = rot.y
+        self._pose.orientation.z = rot.z
+        self._pose.orientation.w = rot.w
 
     def set_colour(self):
         """"""
+        self._colour = 'red'
+        rospy.loginfo("lol its red")
+        return
+
         offset = 1
         while self._colour is None and not rospy.is_shutdown():
             snap = self.image(None)
@@ -225,38 +233,53 @@ class Planner:
         rospy.loginfo("Target colour is " + self._colour)
 
     def wait_move(self):
-        while self.joint_code(None) == 1 and not rospy.is_shutdown():
-            rospy.sleep(1)
-        return self.joint_code(None)
+        rospy.sleep(0.5)
+        rate = rospy.Rate(20)
+        code = self.joint_code(None)
+        while code == 1 and not rospy.is_shutdown():
+            code = self.joint_code(None)
+            rate.sleep()
+        if code > 1:
+            rospy.logwarn(f"Unable to move to configuration ({code})")
+            self._stage = 1
+        else:
+            rospy.loginfo("Move successful!")
 
     def wait_grip(self, set_grip):
-        return
-#        while self.is_grip(None) != set_grip and not rospy.is_shutdown():
-#            rospy.sleep(1)
+        rospy.sleep(0.5)
+        rate = rospy.Rate(20)
+        grip = self.is_grip(None)
+        while grip != set_grip and not rospy.is_shutdown():
+            grip = self.is_grip(None)
+            rate.sleep()
+        rospy.loginfo(f"Gipper actuacted (state: {grip})")
 
     def stage_1(self):
-        rospy.loginfo("Moving to home configuration...")
-        self.set_pose_preset(self._preset["home"])
+        self._grip_pub.publish(False)
+        self.wait_grip(False)
+        rospy.loginfo("Moving to ready position...")
+        self.set_pose_preset(self._preset["ready"])
         self._conf_pub.publish(self._pose)
-        if self.wait_move() > 1:
-            rospy.logwarn("Move unsuccessful!")
-            rospy.logfatal("Please check home configuration preset")
-            rospy.signal_shutdown("Unable to move to home configuration")
+        self.wait_move()
         self._stage = 2
 
     def stage_2(self):
         rospy.loginfo("Looking for fiducial marker...")
-        rate = rospy.Rate(2)
-        target_confirm = False
-        while not target_confirm and not rospy.is_shutdown():
+        rate = rospy.Rate(0.5)
+        while not rospy.is_shutdown():
             scan = self.transforms(None)
             if len(scan) > 1:
-                i = 1 if scan[0].fiducial_id == 0 else 0
+                i = 1 if scan[0].fiducial_id == BASE_FIDUCIAL else 0
                 if self._target is None:
                     self._target = scan[i]
                     rospy.loginfo("Targetting fiducial id " \
                             f"{self._target.fiducial_id}")
-                elif self._target.fiducial_id == scan[i].fiducial_id:
+                    continue
+                match = next((fid for fid in scan if \
+                        fid.fiducial_id == self._target.fiducial_id), None)
+                if match:
+                    rospy.loginfo("Found past fiducial id "\
+                            f"{self._target.fiducial_id}")
                     target_reach = np.linalg.norm(
                             [
                                 self._target.transform.translation.x,
@@ -265,37 +288,65 @@ class Planner:
                             ])
                     scan_reach = np.linalg.norm(
                             [
-                                scan[i].transform.translation.x,
-                                scan[i].transform.translation.y,
-                                scan[i].transform.translation.z
+                                match.transform.translation.x,
+                                match.transform.translation.y,
+                                match.transform.translation.z
                             ])
                     shift = abs((target_reach - scan_reach) / target_reach)
                     if shift < 0.01:
                         rospy.loginfo("Fiducial marker " \
                                 f"{self._target.fiducial_id} ready")
                         self.set_colour()
-                        target_confirm = True
+                        self._stage = 3
+                        return
                 else:
-                    target = None
+                    self._target = None
             else:
-                target = None
+                self._target = None
             rate.sleep()
-        self._stage = 3
 
     def stage_3(self):
         rospy.loginfo("Moving to fiducial marker...")
-        pos = self._tfBuffer.lookup_transform(
-                "fiducial_0",
-                f"fiducial_{self._target.fiducial_id}",
-                rospy.Time()).transform.translation
-        pos.y -= 0.055
-        rot = None
+        position = []
+        rotation = []
+        for i in range(100):
+            try:
+                tf = self._tfBuffer.lookup_transform(
+                        f"fiducial_{BASE_FIDUCIAL}",
+                        f"fiducial_{self._target.fiducial_id}",
+                        rospy.Time()).transform
+            except:
+                continue
+            z_offset = 0.03
+            pos = tf.translation
+            # TF correction
+            pos.x += 0
+            #pos.x *= -1
+            pos.y += 0.05
+            #pos.y *= -1
+            pos.z -= 0.048
+            ###############
+            pos.z += z_offset
+            rot = tf.rotation
+
+            position.append([pos.x, pos.y, pos.z])
+            rotation.append([rot.x, rot.y, rot.z])
+        position = np.mean(np.array(position))
+        rotation = np.mean(np.array(rotation))
+        print(i)
+        rospy.sleep(10)
+        rospy.loginfo("Translation:\n" + str(pos))
+        rospy.loginfo("Rotation:\n" + str(rot))
         self.set_pose_target(pos, rot)
         self._conf_pub.publish(self._pose)
-        if self.wait_move() > 1:
-            rospy.logwarn("Move unsuccessful!")
-            self._stage = 0
-            return
+        self.wait_move()
+        rospy.sleep(2)
+        
+        pos.z -= z_offset
+        self.set_pose_target(pos, rot)
+        self._conf_pub.publish(self._pose)
+        self.wait_move()
+
         rospy.loginfo("Grabbing...")
         self._grip_pub.publish(True)
         self.wait_grip(True)
@@ -316,14 +367,11 @@ class Planner:
             return
         self.set_pose_preset(self._preset[zone])
         self._conf_pub.publish(self._pose)
-        if self.wait_move() > 1:
-            rospy.logwarn("Move unsuccessful!")
-            self._stage = 0
-            return
+        self.wait_move()
         rospy.loginfo("Releasing...")
         self._grip_pub.publish(False)
         self.wait_grip(False)
-        self._stage = 0
+        self._stage = 1
 
     def mainloop(self):
         stage = {
@@ -334,26 +382,6 @@ class Planner:
         }
         self._stage = 1
         while not rospy.is_shutdown():
-            x = 0
-            y = 0
-            colour = "black"
-            while (colour == 'black' or colour == 'white') and not rospy.is_shutdown():
-                snap = self.image(None)
-                index = int((snap.width * (round(y)) + x) * 3)
-                BGR = np.array([int(bit) for bit in \
-                            snap.data[index:index + 3]]).astype(np.uint8)
-                rospy.loginfo(f"x: {x}, y: {y}")
-                rospy.loginfo(f"BGR: {int(BGR[0])} {int(BGR[1])} {int(BGR[2])}")
-                colour = self._colour_detector.detect_color(BGR)
-                rospy.loginfo("Colour: " + colour)
-
-                
-                
-                x += 1
-                y += 1
-            break
-
-            """
             exec_stage = stage.get(self._stage, None)
             if exec_stage is None:
                 rospy.logfatal("Bad programming :(")
@@ -363,7 +391,6 @@ class Planner:
             rospy.loginfo("--------------------------------------------------")
             exec_stage()
             rospy.loginfo("__________________________________________________")
-            """
 
 
 def main():

@@ -1,0 +1,6 @@
+<launch>
+    <node name="dynamixel_controller" pkg="dynamixel_controller" type="dynamixel_controller.py">
+	<param name="config_filename" type="string" value="$(find dynamixel_controller)/src/config.json" />
+    </node>
+    <include file="$(find dynamixel_interface)/launch/dynamixel_interface_controller.launch" />
+</launch>

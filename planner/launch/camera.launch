@@ -1,0 +1,4 @@
+<launch>
+    <include file="$(find ximea_ros_cam)/launch/example_cam.launch" />
+    <include file="$(find aruco_detect)/launch/aruco_detect.launch" />
+</launch>
