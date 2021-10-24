@@ -2,7 +2,7 @@ import numpy as np
 np.set_printoptions(precision=2)
 
 
-LIMIT = 2 * np.pi / 3
+LIMIT = 3 * np.pi / 4
 
 
 def joint_angles(pos: list, rot: list, dim: dict) -> np.array or str:
@@ -45,13 +45,14 @@ def joint_angles(pos: list, rot: list, dim: dict) -> np.array or str:
     L2 = dim["link3"]
     xy = np.sqrt(x**2 + y**2)
     r = np.sqrt(xy**2 + z_offset**2)
-    if r > L1 + L2:
-        return f"Reach ({r}) out of range of total link length ({L1+L2})"
+    gam = (r**2 + L1**2 - L2**2) / (2 * r * L1)
+    if gam > 1:
+        return f"Reach ({r}) out of range"
     phi = np.arctan2(xy, z_offset)
-    alpha = np.arccos((r**2 + L1**2 - L2**2) / (2 * r * L1))
+    alpha = np.arccos(gam)
     theta1 = phi - alpha
     theta2 = np.arccos((z_offset - L1 * np.cos(theta1)) / L2) - theta1
-    angles[1] = theta1
+    angles[1] = -theta1
     angles[2] = theta2
     if z_flip:
         angles[1:3] *= -1

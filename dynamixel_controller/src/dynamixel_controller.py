@@ -26,6 +26,7 @@ class Controller:
         try:
             filename = rospy.get_params("config_filename")
         except:
+            print("Using default file path")
             filename = FILENAME
         self._config = cf.ConfigJsonSerializer.deserialize(filename)
 
@@ -35,15 +36,18 @@ class Controller:
                 queue_size=10)
         self._code_pub = rospy.Publisher("configuration", Int8,
                 queue_size=10)
-        self._sub = rospy.Subscriber("desired_configuration", Pose,
+        self._conf_sub = rospy.Subscriber("desired_configuration", Pose,
                 self.set_configuration)
+        self._joint_sub = rospy.Subscriber("joint_states", JointState,
+                self.read_joint_state)
         rospy.sleep(3)
+        rospy.loginfo("Initialised")
 
         # Messages
         self._joint = JointState()
         self._joint.name = ['joint_1', 'joint_2', 'joint_3', 'joint_4']
         self._joint.velocity = np.ones(4)
-        self._joint.effort = np.ones(4)
+        self._joint.effort = np.zeros(4)
         self._code = Int8()
         self._code.data = 0
 
@@ -55,38 +59,45 @@ class Controller:
        
     def set_configuration(self, pose):
         pos = [pose.position.x, pose.position.y, pose.position.z]
-        rot = [pose.quaternion.x, pose.quaternion.y, pose.quaternion.z]
-        angles = ik.joint_angles(pos, rot, self._config.dimension)
+        rot = [pose.orientation.x, pose.orientation.y, pose.orientation.z]
+        angles = joint_angles(pos, rot, self._config.dimension)
         if type(angles) is str:
-            rospy.logerr("No solution found")
             if angles[0] == 'R':
                 self._state = 2
             else:
                 self._state = 3
         else:
-            rospy.loginfo("Solution found")
-            self._joint.position = angles
             self._state = 1
-        rospy.loginfo(angles)
+        self._joint.position = angles
+
+    def read_joint_state(self, joints):
+        self._joint_angles = joints.position
 
     def mainloop(self):
-        rate = rospy.Rate(2)
+        period = 2
+        rate = rospy.Rate(10)
+        count = 0
+        bad_delay = 10
         while not rospy.is_shutdown():
             self._code_pub.publish(self._state)
-            if self._state == 1:
-                rospy.loginfo("Moving joints...")
-                joint_2_final_dest = self._joint.position[2]
-                self._joint.position[2] = 0
+            if self._state == 1: 
+                rospy.loginfo(f"Moving joints to {self._joint.position}")
                 self._joint_pub.publish(self._joint)
-                rospy.loginfo(f"Motion 1 {self._joint.position}")
-                rospy.sleep(3)
-                self._joint.position[2] = joint_2_final_dest
-                self._joint_pub.publish(self._joint)
-                rospy.loginfo(f"Motion 2 {self._joint.position}")
-                rospy.sleep(3)
+                if (np.abs(np.flip(np.array(self._joint.position)) - \
+                        np.array(self._joint_angles)) < 0.087).all():
+                    rospy.loginfo("Arrived at new joint states")
+                    self._state = 0
             elif self._state > 1:
-                rospy.loginfo("Acknowleding bad configuration")
-                self._state = 0
+                if bad_delay == 10:
+                    rospy.loginfo(f"Bad configuration (code {self._state})")
+                    rospy.loginfo(self._joint.position)
+                bad_delay -= 1
+                if bad_delay == 0:
+                    bad_delay = 10
+                    self._state = 0
+            elif count % 10 == 0:
+                rospy.loginfo("No desired configuration")
+            count += 1
             rate.sleep()
 
 
