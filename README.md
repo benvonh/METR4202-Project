@@ -34,7 +34,35 @@ roslaunch planner camera.launch
 # Launches the planner.py file which is the state machine
 # that controls the whole system
 roslaunch planner planner.launch
+
+# Launches the daemon that is essential for pigpio function
+sudo pigpiod
 ```
 
 # Package Overview
+dynamixel_controller:
+  Acts as an intermediary between desired pose of the end-effector to joint angles through analytical inverse kinematics.
 
+dynamixel_interface:
+  CSIRO package for control of the Dynamixel servos.
+  https://github.com/csiro-robotics/dynamixel_interface
+
+image_pipeline:
+  ROS package used to calibrate camera.
+  https://github.com/ros-perception/image_pipeline
+
+pigpio_master:
+  Additional library referenced by pigpio functionality.
+
+planner:
+  High-level state machine to control the entire system functionlity.
+
+plz_plz_description:
+  Package detailing URDF info and containting launch files for rviz and gazebo models of the design.
+
+sg90_controller:
+  package containing gripper servo node which closes/opens based on messages from the planner.
+
+ximea_ros_cam:
+  CSIRO package for subscribing to sensor_msgs/Image.
+  https://github.com/wavelab/ximea_ros_cam
